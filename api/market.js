@@ -1,8 +1,8 @@
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET');
 
-  const symbols = ['^KS11', '^KQ11', '^GSPC', '^IXIC', '^DJI', '^N225'];
+  // 한국 + 미국 지수만 (일본 제외)
+  const symbols = ['^KS11', '^KQ11', '^GSPC', '^IXIC', '^DJI'];
 
   try {
     const results = await Promise.allSettled(
@@ -40,6 +40,6 @@ export default async function handler(req, res) {
 
     res.json(data);
   } catch (e) {
-    res.status(500).json({ error: 'Failed to fetch market data', detail: e.message });
+    res.status(500).json({ error: e.message });
   }
 }
