@@ -6,7 +6,7 @@
   <title>StockMaster</title>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-  <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
   <style>
     [data-theme="light"]{--bg:#eef2f8;--bg2:#fff;--card:#fff;--card2:#f6f8fc;--border:#dde4f0;--text1:#0d1526;--text2:#4a5880;--text3:#9aabc8;--accent:#2563eb;--accbg:rgba(37,99,235,.08);--green:#059669;--greenbg:rgba(5,150,105,.08);--red:#dc2626;--nav:rgba(255,255,255,.92)}
     [data-theme="dark"]{--bg:#07111f;--bg2:#0c1826;--card:#101e30;--card2:#162438;--border:#1b2c42;--text1:#ddeaff;--text2:#7a92b4;--text3:#405470;--accent:#4f8cff;--accbg:rgba(79,140,255,.1);--green:#00c896;--greenbg:rgba(0,200,150,.1);--red:#ff4d5e;--nav:rgba(10,20,36,.92)}
@@ -432,6 +432,7 @@ function setRange(r){
     const m={'1개월':'1mo','3개월':'3mo','6개월':'6mo','1년':'1y','2년':'2y','3년':'3y'};
     b.classList.toggle('on',m[b.textContent]===r);
   });
+  if(!mainChart&&typeof LightweightCharts!=='undefined')try{initChart();}catch(e){}
   loadChart();
 }
 function setInterval(iv){
@@ -440,11 +441,16 @@ function setInterval(iv){
     const m={'일봉':'1d','주봉':'1wk','월봉':'1mo'};
     b.classList.toggle('on',m[b.textContent]===iv);
   });
+  if(!mainChart&&typeof LightweightCharts!=='undefined')try{initChart();}catch(e){}
   loadChart();
 }
 
 async function loadChart(){
-  if(!mainChart)initChart();
+  // initChart는 이제 밖에서 호출됨 — 여기서는 데이터만 로드
+  if(!mainChart){
+    console.warn('Chart not initialized yet, skipping data load');
+    return;
+  }
   try{
     const r=await fetch(`/api/history?symbol=${encodeURIComponent(SYM)}&range=${currentRange}&interval=${currentInterval}`);
     const d=await r.json();
@@ -711,8 +717,25 @@ document.getElementById('sinp').addEventListener('input',async function(){
 document.addEventListener('click',e=>{if(!e.target.closest('.sbox'))document.getElementById('sdrop').classList.remove('on');});
 
 // ── 초기화 ──
-if(!SYM){location.href='/';}else{
-  loadChart().then(()=>loadQuote());
+if(!SYM){
+  location.href='/';
+} else {
+  // LightweightCharts 로드 확인
+  if(typeof LightweightCharts === 'undefined'){
+    document.getElementById('mainChart').innerHTML=
+      `<div style="height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text3);gap:10px">
+        <div style="font-size:28px">⚠️</div>
+        <div>차트 라이브러리 로드 실패 — 페이지를 새로고침 해주세요</div>
+      </div>`;
+  } else {
+    // 차트 초기화 (독립적으로)
+    try { initChart(); } catch(e) { console.error('initChart error:', e); }
+  }
+  // 가격/지표 로드 (차트와 독립적으로 실행)
+  loadQuote();
+  // 차트 데이터 로드
+  loadChart();
+  // 재무 데이터 로드
   loadFinancials();
 }
 </script>
