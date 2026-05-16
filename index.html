@@ -674,13 +674,19 @@ async function loadChart(range){
   wrap.innerHTML=`<div class="chart-area"><div id="apexChart"></div></div>`;
 
   const opts={
-    series:[{name:'주가',type:'candlestick',data:candles.map(c=>({x:new Date(c.x),y:[+c.o.toFixed(4),+c.h.toFixed(4),+c.l.toFixed(4),+c.c.toFixed(4)]}))}],
+    series:[{name:'주가',type:'candlestick',data:candles.map((c,i)=>({x:i,y:[+c.o.toFixed(4),+c.h.toFixed(4),+c.l.toFixed(4),+c.c.toFixed(4)]}))}],
     chart:{
       type:'candlestick',height:360,background:'transparent',
       toolbar:{show:false},animations:{enabled:true,easing:'easeinout',speed:600},
     },
     plotOptions:{candlestick:{colors:{upward:'#00c896',downward:'#ff4d5e'},wick:{useFillColor:true}}},
-    xaxis:{type:'datetime',labels:{style:{colors:isDark?'#7a92b4':'#4a5880',fontSize:'11px',fontFamily:'IBM Plex Mono'}},axisBorder:{show:false},axisTicks:{show:false}},
+    xaxis:{
+      type:'category',
+      categories:candles.map(c=>{const dt=new Date(c.x);return dt.toLocaleDateString('ko-KR',{month:'short',day:'numeric'});}),
+      labels:{style:{colors:isDark?'#7a92b4':'#4a5880',fontSize:'11px',fontFamily:'IBM Plex Mono'}},
+      axisBorder:{show:false},
+      axisTicks:{show:false},
+    },
     yaxis:{
       labels:{
         formatter:v=>{
@@ -694,7 +700,7 @@ async function loadChart(range){
     grid:{borderColor:isDark?'#1b2c42':'#dde4f0',strokeDashArray:3},
     tooltip:{
       theme:isDark?'dark':'light',
-      x:{format:'yyyy년 MM월 dd일'},
+      x:{formatter:val=>`${candles[val]?new Date(candles[val].x).toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'}):'--'}`},
       y:{
         formatter:(v)=>{
           if(d.currency==='KRW')return v?.toLocaleString('ko-KR')+'원';
