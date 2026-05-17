@@ -160,9 +160,9 @@
       <!-- 봉 종류 -->
       <span class="toolbar-lbl">봉</span>
       <div class="btn-group" id="intervalBtns">
-        <button class="btn on" onclick="setInterval('1d')">일봉</button>
-        <button class="btn" onclick="setInterval('1wk')">주봉</button>
-        <button class="btn" onclick="setInterval('1mo')">월봉</button>
+        <button class="btn on" onclick="setCandleInterval('1d')">일봉</button>
+        <button class="btn" onclick="setCandleInterval('1wk')">주봉</button>
+        <button class="btn" onclick="setCandleInterval('1mo')">월봉</button>
       </div>
       <div class="sep"></div>
       <!-- 보조지표 -->
@@ -435,7 +435,7 @@ function setRange(r){
   if(!mainChart&&typeof LightweightCharts!=='undefined')try{initChart();}catch(e){}
   loadChart();
 }
-function setInterval(iv){
+function setCandleInterval(iv){
   currentInterval=iv;
   document.querySelectorAll('#intervalBtns .btn').forEach(b=>{
     const m={'일봉':'1d','주봉':'1wk','월봉':'1mo'};
