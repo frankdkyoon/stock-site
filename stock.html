@@ -297,7 +297,7 @@ badgeEl.className='badge '+(isKR?'badge-kr':'badge-us');
 badgeEl.textContent=isKR?'KR':isIdx?'IDX':'US';
 
 // ── FORMAT ──
-let currentCur='';
+var currentCur='';
 const isIdxSym=s=>s.startsWith('^');
 function fPx(v,cur){if(v==null||isNaN(v))return'--';if(isIdxSym(SYM))return v.toLocaleString('ko-KR',{maximumFractionDigits:2});if(cur==='KRW')return v.toLocaleString('ko-KR')+'원';return'$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function fVol(v){if(!v)return'--';if(v>=1e9)return(v/1e9).toFixed(1)+'B';if(v>=1e6)return(v/1e6).toFixed(1)+'M';if(v>=1e3)return(v/1e3).toFixed(1)+'K';return''+v;}
@@ -310,12 +310,12 @@ function updClock(){const k=new Date(new Date().toLocaleString('en-US',{timeZone
 setInterval(updClock,1000);updClock();
 
 // ── CHART STATE ──
-let mainChart=null, candleSeries=null, volSeries=null;
-let indCharts={RSI:null,MACD:null,Stoch:null,MFI:null,CCI:null};
-let activeInds=new Set(), chartData=[];
-let currentRange='6mo', currentInterval='1d';
-let drawMode='none', isDragging=false, dragStart=null, previewLine=null;
-const drawnObjects=[];
+var mainChart=null, candleSeries=null, volSeries=null;
+var indCharts={RSI:null,MACD:null,Stoch:null,MFI:null,CCI:null};
+var activeInds=new Set(), chartData=[];
+var currentRange="6mo", currentCandleInterval="1d";
+var drawMode="none", isDragging=false, dragStart=null, previewLine=null;
+var drawnObjects=[];
 
 // ── 차트 초기화 ──
 function initChart(){
@@ -436,7 +436,7 @@ function setRange(r){
   loadChart();
 }
 function setCandleInterval(iv){
-  currentInterval=iv;
+  currentCandleInterval=iv;
   document.querySelectorAll('#intervalBtns .btn').forEach(b=>{
     const m={'일봉':'1d','주봉':'1wk','월봉':'1mo'};
     b.classList.toggle('on',m[b.textContent]===iv);
@@ -452,7 +452,7 @@ async function loadChart(){
     return;
   }
   try{
-    const r=await fetch(`/api/history?symbol=${encodeURIComponent(SYM)}&range=${currentRange}&interval=${currentInterval}`);
+    const r=await fetch(`/api/history?symbol=${encodeURIComponent(SYM)}&range=${currentRange}&interval=${currentCandleInterval}`);
     const d=await r.json();
     if(!d.candles?.length)return;
     currentCur=d.currency||'';
@@ -655,7 +655,7 @@ async function loadQuote(){
 }
 
 // ── 재무 데이터 ──
-let finData=null;
+var finData=null;
 async function loadFinancials(){
   try{
     let data;
@@ -670,7 +670,7 @@ async function loadFinancials(){
     renderFinTab(0);
   }catch{document.getElementById('finBody').innerHTML=`<div class="fin-loading" style="color:var(--red)">재무 데이터를 불러올 수 없습니다</div>`;}
 }
-let curFinTab=0;
+var curFinTab=0;
 function switchFinTab(i){curFinTab=i;document.querySelectorAll('.fin-tab').forEach((t,j)=>t.classList.toggle('on',i===j));renderFinTab(i);}
 function finCard(lbl,val,sub=''){const na=val==null||val==='N/A';return`<div class="fin-card"><div class="fin-lbl">${lbl}</div><div class="fin-val ${na?'fin-na':''}">${na?'N/A':val}</div>${sub?`<div class="fin-sub">${sub}</div>`:''}</div>`;}
 function renderFinTab(tab){
